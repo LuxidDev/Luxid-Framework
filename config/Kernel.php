@@ -2,13 +2,8 @@
 
 namespace Luxid\Framework;
 
-// Note: No import Composer classes here since they might not be available at runtime
-
 class Kernel
 {
-    // Your existing Kernel methods...
-
-    // Static method for Composer hooks
     public static function postCreateProject($event = null)
     {
         $projectRoot = getcwd();
@@ -40,43 +35,52 @@ class Kernel
         echo PHP_EOL;
     }
 
-    private static function setupProject(): void
-    {
-        $projectRoot = getcwd();
-        $vendorDir = $projectRoot . '/vendor';
-
-        self::setupJuiceCli($vendorDir, $projectRoot);
-
-        echo PHP_EOL;
-        echo "✓ Luxid Framework setup complete!" . PHP_EOL;
-        echo PHP_EOL;
-    }
-
     private static function setupJuiceCli(string $vendorDir, string $projectRoot): void
     {
-        $juiceSource = $vendorDir . '/luxid/engine/Engine/juice';
-        $juiceTarget = $projectRoot . '/juice';
+        // The juice file is in the ROOT of luxid/engine package
+        $juiceSource = $vendorDir . '/luxid/engine/juice';
 
-        // Check if juice file already exists and warn
-        if (file_exists($juiceTarget)) {
-            echo "ℹ️  'juice' CLI already exists in project root" . PHP_EOL;
-            echo "   Skipping creation..." . PHP_EOL;
-            return;
+        // Also check Engine/juice as fallback (for consistency)
+        $fallbackSource = $vendorDir . '/luxid/engine/Engine/juice';
+
+        if (!file_exists($juiceSource) && file_exists($fallbackSource)) {
+            $juiceSource = $fallbackSource;
         }
+
+        $juiceTarget = $projectRoot . '/juice';
 
         // Check if juice file exists in engine
         if (!file_exists($juiceSource)) {
             echo "⚠️  Juice CLI not found in engine package" . PHP_EOL;
             echo "   Expected at: " . $juiceSource . PHP_EOL;
+
+            // Debug: List engine directory contents
+            $engineDir = $vendorDir . '/luxid/engine';
+            if (is_dir($engineDir)) {
+                echo PHP_EOL . "   Engine package contents:" . PHP_EOL;
+                $items = scandir($engineDir);
+                foreach ($items as $item) {
+                    if ($item !== '.' && $item !== '..') {
+                        $path = $engineDir . '/' . $item;
+                        echo "   - " . $item . " (" . (is_dir($path) ? "dir" : "file") . ")" . PHP_EOL;
+                    }
+                }
+            }
             return;
         }
 
-        // Copy juice file to project root
-        if (copy($juiceSource, $juiceTarget)) {
-            echo "✓ Created 'juice' CLI tool in project root" . PHP_EOL;
+        // Check if juice file already exists in project root
+        if (file_exists($juiceTarget)) {
+            echo "ℹ️  'juice' CLI already exists in project root" . PHP_EOL;
+            echo "   Skipping creation..." . PHP_EOL;
         } else {
-            echo "⚠️  Could not copy juice to project root" . PHP_EOL;
-            return;
+            // Copy juice file to project root
+            if (copy($juiceSource, $juiceTarget)) {
+                echo "✓ Created 'juice' CLI tool in project root" . PHP_EOL;
+            } else {
+                echo "⚠️  Could not copy juice to project root" . PHP_EOL;
+                return;
+            }
         }
 
         // Handle platform-specific setup
@@ -85,18 +89,29 @@ class Kernel
             chmod($juiceTarget, 0755);
             echo "✓ Made 'juice' executable (Unix/Linux/macOS)" . PHP_EOL;
 
-            // Also ensure vendor/bin/juice exists
+            // Also ensure vendor/bin/juice exists (Composer should handle this via "bin" config)
             $juiceVendorBin = $vendorDir . '/bin/juice';
             if (!file_exists($juiceVendorBin)) {
-                if (!is_dir(dirname($juiceVendorBin))) {
-                    mkdir(dirname($juiceVendorBin), 0755, true);
-                }
-                copy($juiceSource, $juiceVendorBin);
-                chmod($juiceVendorBin, 0755);
+                echo "⚠️  juice not found in vendor/bin (Composer bin-dir)" . PHP_EOL;
+                echo "   You can run: php vendor/luxid/engine/juice" . PHP_EOL;
+            } else {
+                echo "✓ juice available in vendor/bin" . PHP_EOL;
             }
         } else {
             // Windows - create batch file
             self::createWindowsBatchFile($projectRoot);
+        }
+
+        // Test if juice works
+        echo PHP_EOL . "🔧 Testing juice CLI..." . PHP_EOL;
+        exec('php ' . escapeshellarg($juiceTarget) . ' --version 2>&1', $output, $returnCode);
+        if ($returnCode === 0) {
+            echo "✅ juice CLI is working correctly!" . PHP_EOL;
+        } else {
+            echo "⚠️  juice CLI test failed (code: $returnCode)" . PHP_EOL;
+            if (!empty($output)) {
+                echo "   Output: " . implode(PHP_EOL . "   ", $output) . PHP_EOL;
+            }
         }
     }
 
@@ -127,14 +142,5 @@ class Kernel
         if (file_put_contents($ps1File, $ps1Content)) {
             echo "✓ Created 'juice.ps1' for PowerShell users" . PHP_EOL;
         }
-    }
-
-    // Optional: Method to run juice setup from web interface if needed
-    public static function setupJuiceFromWeb(): void
-    {
-        $projectRoot = dirname(__DIR__);
-        $vendorDir = $projectRoot . '/vendor';
-
-        self::setupJuiceCli($vendorDir, $projectRoot);
     }
 }
