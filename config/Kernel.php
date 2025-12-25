@@ -27,8 +27,9 @@ class Kernel
         echo "==========================================" . PHP_EOL;
         echo PHP_EOL;
         echo "🍋 To get started:" . PHP_EOL;
-        echo "   1. Configure your .env file" . PHP_EOL;
-        echo "   2. Run: php juice serve" . PHP_EOL;
+        echo "   1. cd into your newly created Luxid Application" . PHP_EOL;
+        echo "   2. Configure your .env file" . PHP_EOL;
+        echo "   3. Run: php juice serve" . PHP_EOL;
         echo PHP_EOL;
         echo "📚 Documentation: https://luxid.dev/docs" . PHP_EOL;
         echo "🐛 Report issues: https://github.com/luxid/framework/issues" . PHP_EOL;
