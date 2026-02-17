@@ -6,13 +6,23 @@
     "keywords": ["framework", "starter", "luxid", "php"],
     "require": {
         "php": "^8.0",
-        "luxid/engine": "^0.4.2",
+        "luxid/engine": "^0.4.3",
         "vlucas/phpdotenv": "^5.6"
     },
     "autoload": {
         "psr-4": {
             "App\\": "app/",
             "Luxid\\Framework\\": "config/"
+        }
+    },
+    "extra": {
+        "luxid": {
+            "providers": [
+                "Luxid\\Sentinel\\Providers\\SentinelServiceProvider"
+            ],
+            "commands": {
+                "sentinel:install": "Luxid\\Sentinel\\Console\\InstallCommand"
+            }
         }
     },
     "authors": [
