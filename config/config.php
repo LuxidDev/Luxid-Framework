@@ -28,12 +28,23 @@ function getDatabaseDSN(): string
 }
 
 return [
+  // Debug turns on stack traces in error pages and pretty printed JSON.
+  // Keep it off in production: both leak internals and cost bandwidth.
+  'debug' => filter_var($_ENV['APP_DEBUG'] ?? false, FILTER_VALIDATE_BOOL),
+
   'db' => [
     'dsn' => getDatabaseDSN(),
     'user' => $_ENV['DB_USER'] ?? 'root',
     'password' => $_ENV['DB_PASSWORD'] ?? '',
   ],
   'userClass' => \App\Entities\User::class,
+
+  // Origins permitted to call the API. Credentials are only advertised once
+  // an explicit allowlist replaces the wildcard.
+  'cors' => [
+    'allowed_origins' => array_filter(explode(',', $_ENV['CORS_ALLOWED_ORIGINS'] ?? '*')),
+    'supports_credentials' => filter_var($_ENV['CORS_CREDENTIALS'] ?? false, FILTER_VALIDATE_BOOL),
+  ],
 
   // Rocket ORM settings
   'rocket' => [
