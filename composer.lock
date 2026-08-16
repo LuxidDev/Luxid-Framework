@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "886447bd44eb9c554366ac7ee6f0ca10",
+    "content-hash": "785fa7ee7b99124740851f7b860f7ae1",
     "packages": [
         {
             "name": "fakerphp/faker",
@@ -133,11 +133,11 @@
         },
         {
             "name": "luxid/engine",
-            "version": "0.8.1",
+            "version": "0.9.0",
             "dist": {
                 "type": "path",
                 "url": "../Engine",
-                "reference": "e29ab05c568c58b33c2c841cfdd50e34ebea6b04"
+                "reference": "08e4799691498965026ae8e79e04ea5220c39d99"
             },
             "require": {
                 "luxid/rocket": "^0.3",
@@ -198,11 +198,11 @@
         },
         {
             "name": "luxid/nova",
-            "version": "0.2.0",
+            "version": "0.2.1",
             "dist": {
                 "type": "path",
                 "url": "../Nova",
-                "reference": "21427e60350e0439a42ab49e6bfbcf5a44f2f834"
+                "reference": "209dd2c7ac44c2852c28eee2d045b492e00bd4ce"
             },
             "require": {
                 "php": "^8.1"

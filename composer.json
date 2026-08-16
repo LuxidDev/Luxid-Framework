@@ -11,8 +11,8 @@
   ],
   "require": {
     "php": "^8.1",
-    "luxid/engine": "^0.8",
-    "luxid/nova": "^0.2",
+    "luxid/engine": "^0.9",
+    "luxid/nova": "^0.2.1",
     "luxid/rocket": "^0.3",
     "vlucas/phpdotenv": "^5.6"
   },
