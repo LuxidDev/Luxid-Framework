@@ -39,25 +39,9 @@ if (class_exists(Compiler::class)) {
     }
 }
 
-// Register every component, page and layout. Nested directories are walked so
-// pages can be grouped without extra configuration.
-foreach (['components', 'pages', 'layouts', 'helpers'] as $directory) {
-    $path = $root . '/nova/' . $directory;
-
-    if (!is_dir($path)) {
-        continue;
-    }
-
-    $files = new RecursiveIteratorIterator(
-        new RecursiveDirectoryIterator($path, FilesystemIterator::SKIP_DOTS)
-    );
-
-    foreach ($files as $file) {
-        if ($file->isFile() && str_ends_with($file->getFilename(), '.php')) {
-            require_once $file->getPathname();
-        }
-    }
-}
+// Register every component, page and layout. Shared with web/worker.php so
+// both entry points see the same registry.
+require $root . '/bootstrap/nova.php';
 
 $app = new Application($root, $config);
 
