@@ -80,7 +80,8 @@ php juice seed          # optional sample data
 php juice start
 ```
 
-The application is served at <http://localhost:8080>.
+The application is served at <http://localhost:8000>. Use `--host` and `--port`
+to change that.
 
 ## Project layout
 

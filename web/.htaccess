@@ -1,0 +1,20 @@
+# Route every request that is not a real file to the front controller.
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Strip a trailing slash so /todos/ and /todos resolve to one route.
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_URI} (.+)/$
+    RewriteRule ^ %1 [L,R=301]
+
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^ index.php [L]
+</IfModule>
+
+# Never serve dotfiles; .env sits one directory up but this guards a misconfigured root.
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>
+
+Options -Indexes
