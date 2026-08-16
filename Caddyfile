@@ -1,0 +1,28 @@
+# FrankenPHP configuration for Luxid.
+#
+#   frankenphp run
+#
+# Worker mode boots the application once and serves many requests from the same
+# process. Drop the `worker` block to run classic mode, where every request
+# boots through web/index.php as it would under PHP-FPM.
+
+{
+	frankenphp {
+		worker {
+			file ./web/worker.php
+			# Roughly one worker per core; raise for I/O-bound applications.
+			num 8
+		}
+	}
+}
+
+localhost {
+	root * web/
+
+	encode zstd gzip
+
+	# Serve static files directly and hand everything else to PHP.
+	php_server {
+		index index.php
+	}
+}

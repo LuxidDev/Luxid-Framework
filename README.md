@@ -207,6 +207,25 @@ php juice db:status
 
 Run `php juice` with no arguments for the full list.
 
+## Going to production
+
+`php juice optimize` prepares the application and reports what is still costing
+you. The short version:
+
+```ini
+opcache.enable=1
+opcache.validate_timestamps=0
+opcache.preload=/path/to/your-app/preload.php
+opcache.preload_user=www-data
+```
+
+That alone takes a cold request boot from ~700µs to ~105µs. For another ~5x,
+run under FrankenPHP worker mode with the bundled `web/worker.php` and
+`Caddyfile`.
+
+See **[PERFORMANCE.md](PERFORMANCE.md)** for the measurements, the worker-safety
+rules, and why Swoole is not the right fit here.
+
 ## Learning Luxid
 
 Documentation lives at [luxid.dev](https://www.luxid.dev), and the
