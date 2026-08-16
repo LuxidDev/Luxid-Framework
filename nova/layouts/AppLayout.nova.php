@@ -17,6 +17,9 @@ component('layouts/AppLayout', function ($c) {
     <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <!-- Nova reads this token when posting component actions; without it the
+           server rejects the call. -->
+      @raw(\Luxid\Nova\Csrf::metaTag())
       <title>@echo($state->title)</title>
       <link rel="icon" href="/favicon.ico" type="image/x-icon">
       <link rel="preconnect" href="https://fonts.googleapis.com">
