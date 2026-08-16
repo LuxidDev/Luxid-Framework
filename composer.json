@@ -10,26 +10,16 @@
     "php"
   ],
   "require": {
-    "php": "^8.0",
-    "luxid/engine": "^0.7.9.7",
-    "luxid/nova": "^0.1.1",
-    "luxid/rocket": "^0.2.2",
+    "php": "^8.1",
+    "luxid/engine": "^0.8",
+    "luxid/nova": "^0.2",
+    "luxid/rocket": "^0.3",
     "vlucas/phpdotenv": "^5.6"
   },
   "autoload": {
     "psr-4": {
       "App\\": "app/",
       "Luxid\\Framework\\": "config/"
-    }
-  },
-  "extra": {
-    "luxid": {
-      "providers": [
-        "Luxid\\Haven\\Providers\\HavenServiceProvider"
-      ],
-      "commands": {
-        "haven:install": "Luxid\\Haven\\Console\\InstallCommand"
-      }
     }
   },
   "authors": [
@@ -45,5 +35,35 @@
       "php -r \"if (file_exists('.env.example') && !file_exists('.env')) copy('.env.example', '.env');\"",
       "Luxid\\Framework\\Kernel::postCreateProject"
     ]
-  }
+  },
+  "repositories": [
+    {
+      "type": "path",
+      "url": "../Engine",
+      "options": {
+        "symlink": true
+      }
+    },
+    {
+      "type": "path",
+      "url": "../Nova",
+      "options": {
+        "symlink": true
+      }
+    },
+    {
+      "type": "path",
+      "url": "../Rocket-ORM",
+      "options": {
+        "symlink": true
+      }
+    },
+    {
+      "type": "path",
+      "url": "../Haven",
+      "options": {
+        "symlink": true
+      }
+    }
+  ]
 }

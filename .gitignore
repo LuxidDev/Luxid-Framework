@@ -1,22 +1,26 @@
 # Dependencies
 /vendor/
-composer.lock
-/storage/
 
 # Environment
 .env
 .env.production
 
-# Logs
-logs/
+# Generated
+/storage/
 *.log
+logs/
 
-# System files
-.DS_Store
-Thumbs.db
+# Tooling caches
+.php-cs-fixer.cache
+.phpunit.result.cache
+/.phpunit.cache/
 
-# IDE
+# Editors
 .idea/
 .vscode/
 *.swp
 *.swo
+
+# System files
+.DS_Store
+Thumbs.db
