@@ -133,11 +133,11 @@
         },
         {
             "name": "luxid/engine",
-            "version": "0.8.0",
+            "version": "0.8.1",
             "dist": {
                 "type": "path",
                 "url": "../Engine",
-                "reference": "9cbd546087ab215e1e285dbff26ee166550062a1"
+                "reference": "bcd9563ad6845a746f1a74a9d8b49e0e5a907256"
             },
             "require": {
                 "luxid/rocket": "^0.3",
@@ -202,7 +202,7 @@
             "dist": {
                 "type": "path",
                 "url": "../Nova",
-                "reference": "ac270775b4933ce9b4d62625a14e53728ca4ad0b"
+                "reference": "cba447aa21a822a83abf9febfcf17d41156c7df5"
             },
             "require": {
                 "php": "^8.1"
@@ -259,11 +259,11 @@
         },
         {
             "name": "luxid/rocket",
-            "version": "0.3.0",
+            "version": "0.3.1",
             "dist": {
                 "type": "path",
                 "url": "../Rocket-ORM",
-                "reference": "feb59bdd124a2e85db9adcb6c0aea3b82731e9cf"
+                "reference": "d52f9481d0a622119c74788fb2c82bb0003d3019"
             },
             "require": {
                 "ext-pdo": "*",
