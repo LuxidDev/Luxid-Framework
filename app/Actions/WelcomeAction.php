@@ -10,10 +10,16 @@ class WelcomeAction extends LuxidAction
     public static function routes(): Routes
     {
         return Routes::new()
-            ->add('/', get('index'));
+            ->add('/', get('index'))
+            ->public();
     }
 
-    public function index()
+    /**
+     * Render the welcome page.
+     *
+     * GET /
+     */
+    public function index(): string
     {
         return Nova::render('Welcome', [
             'title' => 'Welcome to Luxid Framework',

@@ -11,13 +11,16 @@ class HealthCheckAction extends LuxidAction
     {
         return Routes::new()
             ->prefix('api')
-            ->add('/health', get('index'));
+            ->add('/health', get('index'))
+            ->public();
     }
 
     /**
+     * Report that the application is up.
+     *
      * GET /api/health
      */
-    public function index()
+    public function index(): string
     {
         return Response::success([
             'status' => 'healthy',
