@@ -1,76 +1,86 @@
 <?php
-// Luxid Framework - Entry Point
+
+declare(strict_types=1);
+
+/**
+ * Luxid front controller.
+ *
+ * Boots the application, registers Nova components and route tables, then hands
+ * the request to the kernel. `run()` flushes the status code, headers and body,
+ * so nothing here needs to echo.
+ */
+
+use Luxid\Foundation\Application;
+use Luxid\Nova\ActionDispatcher;
+use Luxid\Nova\Compiler;
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
-use Luxid\Foundation\Application;
-use Luxid\Nova\Compiler;
-use Rocket\Connection\Connection;
+$root = dirname(__DIR__);
 
-// Load environment variables
-$dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
-$dotenv->load();
+Dotenv\Dotenv::createImmutable($root)->safeLoad();
 
-// Load configuration
-$config = require_once __DIR__ . '/../config/config.php';
+/** @var array<string, mixed> $config */
+$config = require $root . '/config/config.php';
 
-// Initialize Rocket connection
-if (isset($config['db'])) {
-  Connection::initialize($config['db']);
-  // Store connection in app container
-  $config['rocket_connection'] = Connection::getInstance();
-}
+if (class_exists(Compiler::class)) {
+    $novaConfig = $root . '/nova/nova.json';
 
-// Configure Nova if available
-if (class_exists('Luxid\Nova\Compiler')) {
-  $novaConfig = __DIR__ . '/../nova/nova.json';
-  if (file_exists($novaConfig)) {
-    $novaSettings = json_decode(file_get_contents($novaConfig), true);
+    if (is_file($novaConfig)) {
+        $novaSettings = json_decode((string) file_get_contents($novaConfig), true) ?: [];
 
-    if ($novaSettings['compiler']['cache']['enabled'] ?? false) {
-      Compiler::setCachePath($novaSettings['compiler']['cache']['path']);
-      Compiler::enableDebug($novaSettings['compiler']['cache']['debug'] ?? false);
+        if ($novaSettings['compiler']['cache']['enabled'] ?? false) {
+            // Relative cache paths are resolved against the project root so the
+            // compiler does not depend on the process working directory.
+            $cachePath = $novaSettings['compiler']['cache']['path'] ?? 'storage/framework/nova';
+            Compiler::setCachePath(str_starts_with($cachePath, '/') ? $cachePath : $root . '/' . $cachePath);
+            Compiler::enableDebug($novaSettings['compiler']['cache']['debug'] ?? false);
+        }
     }
-  }
 }
 
-// Load Nova components
-$novaBase = __DIR__ . '/../nova';
-$directories = ['components', 'pages', 'layouts'];
-foreach ($directories as $dir) {
-  $path = $novaBase . '/' . $dir;
-  if (is_dir($path)) {
-    $files = glob($path . '/*.nova.php');
+// Register every component, page and layout. Nested directories are walked so
+// pages can be grouped without extra configuration.
+foreach (['components', 'pages', 'layouts', 'helpers'] as $directory) {
+    $path = $root . '/nova/' . $directory;
+
+    if (!is_dir($path)) {
+        continue;
+    }
+
+    $files = new RecursiveIteratorIterator(
+        new RecursiveDirectoryIterator($path, FilesystemIterator::SKIP_DOTS)
+    );
+
     foreach ($files as $file) {
-      require_once $file;
+        if ($file->isFile() && str_ends_with($file->getFilename(), '.php')) {
+            require_once $file->getPathname();
+        }
     }
-
-    // Handle subdirectories (for nested pages)
-    $subDirs = glob($path . '/*', GLOB_ONLYDIR);
-    foreach ($subDirs as $subDir) {
-      $subFiles = glob($subDir . '/*.nova.php');
-      foreach ($subFiles as $file) {
-        require_once $file;
-      }
-    }
-  }
 }
 
-// Load Nova helpers
-$helpersPath = $novaBase . '/helpers';
-if (is_dir($helpersPath)) {
-  $helpers = glob($helpersPath . '/*.php');
-  foreach ($helpers as $file) {
-    require_once $file;
-  }
+$app = new Application($root, $config);
+
+require_once $root . '/routes/api.php';
+require_once $root . '/routes/web.php';
+
+// Component actions post back to the page they were rendered from, so they are
+// answered before routing takes over.
+if ($app->request->isPost() && class_exists(ActionDispatcher::class)) {
+    $payload = $app->request->getJson() ?? $app->request->all();
+
+    if (is_array($payload) && ActionDispatcher::handles($payload)) {
+        try {
+            $app->response->setHeader('Content-Type', 'text/html; charset=utf-8');
+            $app->response->send(ActionDispatcher::dispatch($payload));
+        } catch (RuntimeException $e) {
+            $app->response->setStatusCode(403)->send($e->getMessage());
+        } catch (InvalidArgumentException $e) {
+            $app->response->setStatusCode(400)->send($e->getMessage());
+        }
+
+        return;
+    }
 }
 
-// Create application instance
-$app = new Application(dirname(__DIR__), $config);
-
-// Load routes
-require_once __DIR__ . '/../routes/api.php';
-require_once __DIR__ . '/../routes/web.php';
-
-// Run the application
 $app->run();
