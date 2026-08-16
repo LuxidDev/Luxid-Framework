@@ -1,63 +1,88 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Providers;
 
 use Luxid\Foundation\Application;
 use Rocket\Connection\Connection;
-use Rocket\Migration\Migrator;
-use Rocket\Seed\SeederRunner;
 
+/**
+ * Example application provider.
+ *
+ * Providers are discovered from `extra.luxid.providers` in composer.json, then
+ * instantiated with no arguments and handed the application:
+ *
+ * ```php
+ * public function register(Application $app): void
+ * public function boot(Application $app): void
+ * ```
+ *
+ * `register()` runs for every provider before any `boot()` does, so a provider
+ * may depend on another's registrations during boot but not during register.
+ *
+ * The kernel already opens the Rocket connection from `config['db']`. This
+ * provider only fills in when an application boots without that key.
+ *
+ * @package App\Providers
+ */
 class RocketServiceProvider
 {
-  protected Application $app;
-  protected array $config;
+    /**
+     * Bind services onto the application.
+     *
+     * @param Application $app The booting application
+     */
+    public function register(Application $app): void
+    {
+        if ($app->db !== null) {
+            return;
+        }
 
-  public function __construct(Application $app)
-  {
-    $this->app = $app;
-    // Load config from file
-    $configFile = $app::$ROOT_DIR . '/config/rocket.php';
-    if (file_exists($configFile)) {
-      $this->config = require $configFile;
-    } else {
-      $this->config = [];
-    }
-  }
+        $config = $this->databaseConfig($app);
 
-  public function register(): void
-  {
-    // Register Rocket connection using database config
-    $dbConfig = $this->getDatabaseConfig();
+        if ($config === null) {
+            return;
+        }
 
-    if ($dbConfig) {
-      Connection::initialize($dbConfig);
+        Connection::initialize($config);
+        $app->db = Connection::getInstance();
     }
 
-    // Store the connection in the app container
-    $this->app->db = Connection::getInstance();
-  }
-
-  public function boot(): void
-  {
-    // Boot logic - register commands, etc.
-  }
-
-  protected function getDatabaseConfig(): ?array
-  {
-    // Try to get database config from config file
-    $configFile = $this->app::$ROOT_DIR . '/config/config.php';
-    if (file_exists($configFile)) {
-      $config = require $configFile;
-      if (isset($config['db'])) {
-        return $config['db'];
-      }
+    /**
+     * Run once every provider has registered.
+     *
+     * @param Application $app The booting application
+     */
+    public function boot(Application $app): void
+    {
     }
 
-    // Fallback to environment variables
-    return [
-      'dsn' => $_ENV['DB_DSN'] ?? '',
-      'user' => $_ENV['DB_USER'] ?? 'root',
-      'password' => $_ENV['DB_PASSWORD'] ?? '',
-    ];
-  }
+    /**
+     * Resolve the database configuration.
+     *
+     * @param Application $app The booting application
+     *
+     * @return array{dsn: string, user: string, password: string}|null
+     */
+    protected function databaseConfig(Application $app): ?array
+    {
+        $configFile = $app::$ROOT_DIR . '/config/config.php';
+
+        if (is_file($configFile)) {
+            $config = require $configFile;
+
+            if (isset($config['db'])) {
+                return $config['db'];
+            }
+        }
+
+        $dsn = $_ENV['DB_DSN'] ?? '';
+
+        return $dsn === '' ? null : [
+            'dsn' => $dsn,
+            'user' => $_ENV['DB_USER'] ?? 'root',
+            'password' => $_ENV['DB_PASSWORD'] ?? '',
+        ];
+    }
 }
